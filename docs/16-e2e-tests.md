@@ -3,17 +3,29 @@
 Install Go
 
 ```
-wget https://dl.google.com/go/go1.12.1.linux-amd64.tar.gz
+wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
 
-sudo tar -C /usr/local -xzf go1.12.1.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz
 export GOPATH="/home/vagrant/go"
 export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 ```
 
 ## Install kubetest
+### https://www.inovex.de/blog/testing-kubernetes-infrastructure/
 
 ```
-go get -v -u k8s.io/test-infra/kubetest
+# Install the latest version of kubetest
+go get -u k8s.io/test-infra/kubetest
+# Tests need to match cluster version
+K8S_VERSION=$(kubectl version -o json | jq -r '.serverVersion.gitVersion')
+# Required for historic reasons
+export KUBERNETES_CONFORMANCE_TEST=y
+# Needs to be set explicitly
+export KUBECONFIG=”$HOME/.kube/config”
+# Actual run command, skeleton is the provider for existing clusters
+kubetest --provider=skeleton --test --test_args=”--ginkgo.focus=\[Conformance\]” --extract ${K8S_VERSION}
+
+
 ```
 
 > Note: This may take a few minutes depending on your network speed

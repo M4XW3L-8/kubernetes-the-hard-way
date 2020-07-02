@@ -48,14 +48,18 @@ data:
   Corefile: |
     .:53 {
         errors
-        health
+        health { lameduck 5s
+        }
+        ready
         kubernetes cluster.local in-addr.arpa ip6.arpa {
           pods insecure
-          upstream
           fallthrough in-addr.arpa ip6.arpa
         }
         prometheus :9153
-        proxy . /etc/resolv.conf
+        forward . /etc/resolv.conf  {
+          prefer_udp
+          policy sequential
+        }
         cache 30
         loop
         reload
@@ -92,7 +96,7 @@ spec:
           operator: "Exists"
       containers:
       - name: coredns
-        image: coredns/coredns:1.2.2
+        image: coredns/coredns:1.6.7
         imagePullPolicy: IfNotPresent
         resources:
           limits:
